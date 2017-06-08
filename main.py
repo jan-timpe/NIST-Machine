@@ -1,4 +1,4 @@
-import api.fetch as api
+import api.nvd as api
 
 api.download_and_insert_recent()
 print(api.fetch_one({
