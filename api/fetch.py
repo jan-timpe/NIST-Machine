@@ -9,7 +9,7 @@ def download_recent():
 
 	return file
 
-def fetch_many(args)
+def fetch_many(args):
 	result = db.cve_items.find(args)
 
 	return result
@@ -19,12 +19,12 @@ def fetch_one(args):
 
 	return result
 
-def insert_many_cves(items)
+def insert_many_cves(items):
 	result = db.cve_items.insert_many(items)
 
 	return result
 
-def insert_one_cve(item)
+def insert_one_cve(item):
 	result = db.cve_items.insert_one(item)
 
 	return result
@@ -45,7 +45,7 @@ def insert_by_chunk(obj_generator, size = 100):
 			insert_many_cves(chunk)
 			del chunk[:]
 
-	if len(chunk) > 0
+	if len(chunk) > 0:
 		insert_many_cves(chunk)
 
 def download_and_insert_recent():
