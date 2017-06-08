@@ -3,6 +3,7 @@
 # objects are inserted into a mongodb instance, defined in the database module
 
 from database.development import db
+from pymongo.errors import DuplicateKeyError
 import requests, ijson, gzip, urllib
 
 #
@@ -30,20 +31,28 @@ def fetch_one(args):
 	return result
 
 # inserts a list of CVE Items to the mogodb instance
-# does NOT check for duplicate CVE_IDs!
-# FIXME: check for duplicate CVE_IDs
+# checks for duplicate CVE_IDs with an index defined in the database module
+# FIXME: is there a way to update duplicate items instead of ignoring them?
+	# perhaps a vulnerability has been fixed
 def insert_many_cves(items):
-	result = db.cve_items.insert_many(items)
-
-	return result
+	try:
+		result = db.cve_items.insert_many(items)
+		return result
+	except:
+		print('Duplicate not inserted')
+		return None
 
 # inserts one cve item to the mongo database
-# does NOT check for duplicate CVE_ID
-# FIXME: check for duplicates
+# checks for duplicate CVE_IDs with an index defined in the database module
+# FIXME: is there a way to update duplicate items instead of ignoring them?
+	# perhaps a vulnerability has been fixed
 def insert_one_cve(item):
-	result = db.cve_items.insert_one(item)
-
-	return result
+	try:
+		result = db.cve_items.insert_one(item)
+		return result
+	except:
+		print('Duplicate not inserted')
+		return None
 
 # parses an open file, downloaded and unzipped, from the NVD site
 # returns an ijson object generator
