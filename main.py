@@ -2,17 +2,17 @@ import api.vulnerability_database as api
 
 print('Starting')
 
-# api.update_recent()
-# print('Downloaded recent')
+api.update_recent()
+print('Downloaded recent')
 
-# api.update_modified()
-# print('Downloaded modified')
+api.update_modified()
+print('Downloaded modified')
 
-# api.update_year(2017)
-# print('Downloaded 2017')
+api.update_year(2017)
+print('Downloaded 2017')
 
-# api.update_year(2015)
-# print('Downloaded 2015')
+api.update_year(2015)
+print('Downloaded 2015')
 
 
 print('Searching for MongoDB vulns')
