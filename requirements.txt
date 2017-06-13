@@ -1,6 +1,7 @@
 certifi==2017.4.17
 chardet==3.0.4
 idna==2.5
+ijson==2.3
 mongoengine==0.13.0
 numpy==1.13.0
 olefile==0.44
