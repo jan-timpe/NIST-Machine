@@ -1,6 +1,8 @@
 from database.development import db
 import datetime
 
+# converts publish_date of cve_references to a python datetime object to make available for searching by year
+# if we add more preprocessing methods, break them into individual functions and call them here
 def preprocess(item):
 	for ref in item['CVE_references']['CVE_reference_data']:
 		if 'publish_date' in ref:
@@ -50,6 +52,7 @@ def insert_or_replace_one(cve_id, item):
 		return result
 	except:
 		return None
+
 
 def insert_or_replace_many(items):
 	for item in items:

@@ -20,6 +20,7 @@ def by_id(id):
 	}})
 	return result
 
+# accepts 1-2 datetime objects as parameters
 def by_date(start, end=datetime.datetime.now()):
 	result = many({
 		'CVE_references.CVE_reference_data': {
@@ -31,9 +32,25 @@ def by_date(start, end=datetime.datetime.now()):
 
 	return result
 
+# accepts 1 integer argument
 def by_year(year):
 	start = datetime.datetime(year, 1, 1, 0, 0, 0, 0)
 	result = by_date(start)
 
 	return result
 
+# accepts 1 string argument
+def description_contains(search_string):
+	regex = '.*'+str(search_string)+'.*'
+	result = many({
+		'CVE_description.CVE_description_data': {
+			'$elemMatch': {
+				'value': {
+					'$regex': regex,
+					'$options': 'i'
+				}
+			}
+		}
+	})
+
+	return result
