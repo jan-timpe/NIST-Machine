@@ -54,3 +54,22 @@ def description_contains(search_string):
 	})
 
 	return result
+
+def cpe_string_contains(search_string):
+	regex = '.*'+str(search_string)+'.*'
+	result = many({
+		'CVE_configurations.CVE_configuration_data': {
+			'$elemMatch': {
+				'cpe': {
+					'$elemMatch': {
+						'cpeMatchString': {
+							'$regex': regex,
+							'$options': 'i'
+						}
+					}
+				}
+			}
+		}
+	})
+
+	return result

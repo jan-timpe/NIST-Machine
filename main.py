@@ -11,7 +11,7 @@ def print_cve_item(item):
 results = [
 	api.fetch.by_date(datetime(2017, 6, 20, 0, 0, 0, 0)),
 	api.fetch.by_year(2017),
-	api.fetch.description_contains('e')
+	api.fetch.cpe_string_contains('php:php')
 ]
 
 for result in results:
