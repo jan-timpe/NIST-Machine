@@ -1,6 +1,6 @@
 import pymongo
 
-client = pymongo.MongoClient('localhost', 27017)
+client = pymongo.MongoClient('mongodb://database-service')
 db = client.cve_items
 
 # create an index on CVE_ID so that duplicate inserts are ignored

@@ -1,5 +1,6 @@
 import api.vulnerability_database as api
 from datetime import datetime
+from itertools import chain
 
 def print_cve_item(item):
 	cve_id = item['CVE_data_meta']['CVE_id']
@@ -11,7 +12,7 @@ def print_cve_item(item):
 results = [
 	api.fetch.by_date(datetime(2017, 6, 20, 0, 0, 0, 0)),
 	api.fetch.by_year(2017),
-	api.fetch.cpe_string_contains('php:php')
+	api.fetch.cpe_string_contains('php:php'),
 ]
 
 for result in results:
