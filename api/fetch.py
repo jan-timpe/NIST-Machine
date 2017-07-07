@@ -20,6 +20,14 @@ def by_id(id):
 	}})
 	return result
 
+def by_date(start, end=datetime.datetime.now()):
+	return many({
+		'vulnerability_vector.last_modified': {
+			'$gte': start,
+			'$lt': end
+		}
+	})
+
 # accepts 1 integer argument
 def by_year(year):
 	start = datetime.datetime(year, 1, 1, 0, 0, 0, 0)

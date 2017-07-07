@@ -5,8 +5,7 @@ from itertools import chain
 api.refresh_all()
 
 results = [
-	api.fetch.cpe_string_contains(''),
-	api.fetch.many({})
+	api.fetch.by_year(2017)
 ]
 
 for result in results:

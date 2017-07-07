@@ -60,6 +60,7 @@ def create_vulnerability_vector(item):
 	last_modified = None
 	if 'lastModifiedDate' in item:
 		last_modified = datetime.datetime.strptime(item['lastModifiedDate'], '%Y-%m-%dT%H:%MZ')
+		item['lastModifiedDate'] = last_modified
 
 	return {
 		'cve_id': cve_id,
@@ -68,7 +69,8 @@ def create_vulnerability_vector(item):
 		'cpe_data': cpe_data,
 		'cvss_v2': cvss_v2,
 		'cvss_v3': cvss_v3,
-		'cwe_id': cwe_id
+		'cwe_id': cwe_id,
+		'last_modified': last_modified
 	}
 
 #
@@ -82,7 +84,6 @@ def insert_or_replace_one(cve_id, item):
 	)
 	return result
 	# except:
-	# 	print('ooooops')
 	# 	return None
 
 
