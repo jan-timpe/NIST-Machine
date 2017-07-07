@@ -15,22 +15,18 @@ def one(args):
 
 # retrieves one CVE_Item given a CVE_ID (primary key)
 def by_id(id):
-	result = one({"CVE_data_meta": {
-			"CVE_ID": str(id)
+	result = one({"cve.CVE_data_meta": {
+			"ID": str(id)
 	}})
 	return result
 
-# accepts 1-2 datetime objects as parameters
 def by_date(start, end=datetime.datetime.now()):
-	result = many({
-		'CVE_references.CVE_reference_data': {
-			'$elemMatch': {
-				'publish_date': {'$gte': start, '$lt': end}
-			}
+	return many({
+		'vulnerability_vector.last_modified': {
+			'$gte': start,
+			'$lt': end
 		}
 	})
-
-	return result
 
 # accepts 1 integer argument
 def by_year(year):
@@ -43,11 +39,30 @@ def by_year(year):
 def description_contains(search_string):
 	regex = '.*'+str(search_string)+'.*'
 	result = many({
-		'CVE_description.CVE_description_data': {
+		'cve.description.desctiption_data': {
 			'$elemMatch': {
 				'value': {
 					'$regex': regex,
 					'$options': 'i'
+				}
+			}
+		}
+	})
+
+	return result
+
+def cpe_string_contains(search_string):
+	regex = '.*'+str(search_string)+'.*'
+	result = many({
+		'configurations.nodes': {
+			'$elemMatch': {
+				'cpe': {
+					'$elemMatch': {
+						'cpeMatchString': {
+							'$regex': regex,
+							'$options': 'i'
+						}
+					}
 				}
 			}
 		}
