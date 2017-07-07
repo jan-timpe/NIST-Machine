@@ -31,7 +31,7 @@ def create_vulnerability_vector(item):
 	descriptions = None
 	en_desc = None
 	if 'description' in item['cve']:
-		if 'description_date' in item['cve']['description']:
+		if 'description_data' in item['cve']['description']:
 			descriptions = item['cve']['description']['description_data']
 			en_desc = get_cve_en_description(descriptions)
 
