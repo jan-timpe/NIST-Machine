@@ -1,61 +1,93 @@
 from database.development import db
 import datetime
 
-# converts publish_date of cve_references to a python datetime object to make available for searching by year
-# if we add more preprocessing methods, break them into individual functions and call them here
-def preprocess(item):
-	for ref in item['CVE_references']['CVE_reference_data']:
-		if 'publish_date' in ref:
-			ref['publish_date'] = datetime.datetime.strptime(ref['publish_date'], "%m/%d/%Y")
+# goal for these methods is to have a standardized format for parsing.
+def get_cve_en_description(descriptions):
+	for desc in descriptions:
+		if 'lang' in desc and desc['lang'] == 'en':
+			return desc['value']
+	return None
 
-	return item
+def get_cve_config_cpe(config_data):
+	cpe_data = []
+	for node in config_data:
+		if 'cpe' in node:
+			for child in node['cpe']:
+				cpe_data.append(child)
 
-# inserts a list of CVE Items to the mogodb instance
-# checks for duplicate CVE_IDs with an index defined in the database package
-def one(item):
-	try:
-		result = db.cve_items.insert_one(item)
-		return result
-	except:
-		return None
+	return cpe_data
 
-# inserts one cve item to the mongo database
-# checks for duplicate CVE_IDs with an index defined in the database package
-def many(items):
-	items = preprocess(items)
-	try:
-		result = db.cve_items.insert_many(items)
-		return result
-	except:
-		return None
+def get_cve_en_cwe_id(problemtype_data):
+	for prb in problemtype_data:
+		if 'description' in prb:
+			for desc in prb['description']:
+				if 'lang' in desc and desc['lang'] == 'en':
+					return desc['value']
+	return None
 
-# takes an ijson object generator and loads groups of
-# objects into memory to be inserted into the database
-def group(obj_generator, size = 100):
-	obj_generator = preprocess(obj_generator)
-	g = []
-	for item in obj_generator:
-		g.append(item)
+def create_vulnerability_vector(item):
+	cve_id = item['cve']['CVE_data_meta']['ID']
 
-		if len(g) >= size:
-			many(g)
-			del g[:]
+	descriptions = None
+	en_desc = None
+	if 'description' in item['cve']:
+		if 'description_date' in item['cve']['description']:
+			descriptions = item['cve']['description']['description_data']
+			en_desc = get_cve_en_description(descriptions)
 
-	if len(g) > 0:
-		many(g)
+	if 'references' in item['cve']:
+		if 'reference_data' in item['cve']['references']:
+			references = item['cve']['references']['reference_data']
+
+	cpe_data = get_cve_config_cpe(item['configurations']['nodes'])
+
+	cvss_v2 = None
+	if 'baseMetricV2' in item['impact']:
+		item['impact']['baseMetricV2']['cvssV2']['baseScore'] = str(item['impact']['baseMetricV2']['cvssV2']['baseScore'])
+		item['impact']['baseMetricV2']['exploitabilityScore'] = str(item['impact']['baseMetricV2']['exploitabilityScore'])
+		item['impact']['baseMetricV2']['impactScore'] = str(item['impact']['baseMetricV2']['impactScore'])
+		cvss_v2 = item['impact']['baseMetricV2']
+
+	cvss_v3 = None
+	if 'baseMetricV3' in item['impact']:
+		item['impact']['baseMetricV3']['cvssV3']['baseScore'] = str(item['impact']['baseMetricV3']['cvssV3']['baseScore'])
+		item['impact']['baseMetricV3']['exploitabilityScore'] = str(item['impact']['baseMetricV3']['exploitabilityScore'])
+		item['impact']['baseMetricV3']['impactScore'] = str(item['impact']['baseMetricV3']['impactScore'])
+		cvss_v3 = item['impact']['baseMetricV3']
+
+	cwe_id = get_cve_en_cwe_id(item['cve']['problemtype']['problemtype_data'])
+
+	last_modified = None
+	if 'lastModifiedDate' in item:
+		last_modified = datetime.datetime.strptime(item['lastModifiedDate'], '%Y-%m-%dT%H:%MZ')
+
+	return {
+		'cve_id': cve_id,
+		'cve_description': en_desc,
+		'cve_reference_data': references,
+		'cpe_data': cpe_data,
+		'cvss_v2': cvss_v2,
+		'cvss_v3': cvss_v3,
+		'cwe_id': cwe_id
+	}
 
 #
 #
 def insert_or_replace_one(cve_id, item):
-	try:
-		result = db.cve_items.replace_one({'CVE_data_meta': {'CVE_ID': str(cve_id)}}, item, True)
-		return result
-	except:
-		return None
+	# try:
+	result = db.cve_items.replace_one(
+		{'cve.CVE_data_meta.ID': str(cve_id)},
+		item,
+		True # upsert = True; inserts if not found
+	)
+	return result
+	# except:
+	# 	print('ooooops')
+	# 	return None
 
 
 def insert_or_replace_many(items):
 	for item in items:
-		item = preprocess(item)
-		item_id = item['CVE_data_meta']['CVE_ID']
+		item['vulnerability_vector'] = create_vulnerability_vector(item)
+		item_id = item['cve']['CVE_data_meta']['ID']
 		insert_or_replace_one(item_id, item)
