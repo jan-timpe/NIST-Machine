@@ -1,6 +1,7 @@
 import api.vulnerability_database as api
 from datetime import datetime
 from itertools import chain
+from api.models import VulnerabilityVector
 
 api.refresh_all()
 
@@ -14,13 +15,5 @@ for result in results:
 	else:
 		print('Nothing found')
 
-
-
-# Cpe string 1,
-# - CVE_ID,
-# - CVE_impact_cvssv3,
-# - CVE_impact_cvssv2,
-# - CWE_ID,
-# - publish time,
-# - cpe,
-# - vulnerability description
+for result in VulnerabilityVector.objects(cve_id='CVE-2004-2778'):
+    print(result.as_csv_row())
