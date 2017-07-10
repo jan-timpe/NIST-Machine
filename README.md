@@ -62,7 +62,7 @@ import api.vulnerability_database as api
 ```
 
 ### Downloading data
-Data is downloaded from the NIST.gov server using ```urllib```, then is parsed using ```ijson``` and inserted into the MongoDB instance. 
+Data is downloaded from the NIST.gov server using ```urllib```, then is parsed using ```ijson``` and inserted into the MongoDB instance.
 ```
 api.update_recent() # downloads the most recently updated version of nvdcve-1.0-recent.gz
 api.update_modified() # downloads and parses nvdcve-1.0-modified.gz
@@ -70,27 +70,27 @@ api.update_year(2017) # downloads and parses nvdcve-1.0-{YEAR}.gz
 ```
 
 ### Using the database
-Once data is downloaded and inserted into the database, you can search for items using ```pymongo``` and the ```api.fetch``` module. 
+Once data is downloaded and inserted into the database, you can search for items using ```pymongo``` and the ```api.fetch``` module.
 ```
 # fetches all values with 'mongodb' (case insensitive) in the CVE_description
 result = api.fetch.many({
-	'CVE_description.CVE_description_data': {
-		'$elemMatch': {
-			'value': {
-				'$regex': '.*mongodb.*',
-				'$options': 'i'
-			}
-		}
-	}
+   'CVE_description.CVE_description_data': {
+      '$elemMatch': {
+         'value': {
+            '$regex': '.*mongodb.*',
+            '$options': 'i'
+         }
+      }
+   }
 })
 
 # this will print all the CVE_ID and all description values for every object returned
 for item in result:
-	descriptions = item['CVE_description']['CVE_description_data']
-	print(item['CVE_data_meta']['CVE_ID'])
+   descriptions = item['CVE_description']['CVE_description_data']
+   print(item['CVE_data_meta']['CVE_ID'])
 
-	for desc in descriptions:
-		print(desc['value'])
+   for desc in descriptions:
+      print(desc['value'])
 ```
 
 The ```api.fetch.one()``` function can be used to return a single object instead of a list. This will get the _first_ matching object
