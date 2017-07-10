@@ -1,32 +1,31 @@
+from api.models import VulnerabilityVector
 from database.development import db
 import datetime
+from mongoengine.queryset.visitor import Q
 
 # retrieves a list of objects from the mongodb instance matching the passed in arguments
-# arguments must take the format {'key-to-search': { 'embedded-key-to-search': 'result-to-look-for' } }
-def many(args):
-    result = db.cve_items.find(args)
+def many(**kwargs):
+    # result = db.cve_items.find(args)
+    result = VulnerabilityVector.objects(**kwargs)
     return result
 
 # retrieves the first object from the mongodb instance matching the passed in arguments
-# arguments must take the format {'key-to-search': { 'embedded-key-to-search': 'result-to-look-for' } }
-def one(args):
-    result = db.cve_items.find_one(args)
+def one(**kwargs):
+    # result = db.cve_items.find_one(args)
+    result = VulnerabilityVector.get(**kwargs)
     return result
 
 # retrieves one CVE_Item given a CVE_ID (primary key)
 def by_id(id):
-    result = one({"cve.CVE_data_meta": {
-            "ID": str(id)
-    }})
+    result = one(cve_id=id)
     return result
 
 def by_date(start, end=datetime.datetime.now()):
-    return many({
-        'vulnerability_vector.last_modified': {
-            '$gte': start,
-            '$lt': end
-        }
-    })
+    result = VulnerabilityVector.objects(
+        Q(last_modified__gte=start)
+        & Q(last_modified__lte=end)
+    )
+    return result
 
 # accepts 1 integer argument
 def by_year(year):
@@ -36,36 +35,6 @@ def by_year(year):
     return result
 
 # accepts 1 string argument
-def description_contains(search_string):
-    regex = '.*'+str(search_string)+'.*'
-    result = many({
-        'cve.description.desctiption_data': {
-            '$elemMatch': {
-                'value': {
-                    '$regex': regex,
-                    '$options': 'i'
-                }
-            }
-        }
-    })
-
-    return result
-
 def cpe_string_contains(search_string):
-    regex = '.*'+str(search_string)+'.*'
-    result = many({
-        'configurations.nodes': {
-            '$elemMatch': {
-                'cpe': {
-                    '$elemMatch': {
-                        'cpeMatchString': {
-                            '$regex': regex,
-                            '$options': 'i'
-                        }
-                    }
-                }
-            }
-        }
-    })
-
+    result = many(cpe_data__cpeMatchString__contains=search_string)
     return result
