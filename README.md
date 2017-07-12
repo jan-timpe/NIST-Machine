@@ -69,37 +69,81 @@ api.update_modified() # downloads and parses nvdcve-1.0-modified.gz
 api.update_year(2017) # downloads and parses nvdcve-1.0-{YEAR}.gz
 ```
 
-### Using the database
-Once data is downloaded and inserted into the database, you can search for items using ```pymongo``` and the ```api.fetch``` module.
+### Querying
+[MongoEngine](http://docs.mongoengine.org/) is used to store Vulnerability Vectors generated from the NVD dataset. Filtering can be done by calling
 ```
-# fetches all values with 'mongodb' (case insensitive) in the CVE_description
-result = api.fetch.many({
-   'CVE_description.CVE_description_data': {
-      '$elemMatch': {
-         'value': {
-            '$regex': '.*mongodb.*',
-            '$options': 'i'
-         }
-      }
-   }
-})
+from api.models import VulnerabilityVector
 
-# this will print all the CVE_ID and all description values for every object returned
-for item in result:
-   descriptions = item['CVE_description']['CVE_description_data']
-   print(item['CVE_data_meta']['CVE_ID'])
-
-   for desc in descriptions:
-      print(desc['value'])
+result = VulnerabilityVector.objects.filter(**kwargs)
 ```
 
-The ```api.fetch.one()``` function can be used to return a single object instead of a list. This will get the _first_ matching object
+See the [MongoEngine querying docs](http://docs.mongoengine.org/guide/querying.html) for more usage instructions
+
+### Using the application
+Start the app with python in the command line:
+
 ```
-# fetches an object with CVE_ID equal to "CVE-2014-8180"
-result = api.fetch.one({{"CVE_data_meta": {"CVE_ID": "CVE-2014-8180"}}})
+(venv) $ python3 main.py
 ```
 
-Alternatively, use the ```api.fetch.by_id()``` function to search the database by CVE_ID and return a single object
+There are several command line arguments available. Some are required.
+
+#### Command line arguments
+`-h` or `--help`: Prints usage help to the console
 ```
-result = api.fetch.by_id("CVE-2014-8180")
+(venv) $ python3 main.py -h
+(venv) $ python3 main.py --help
+```
+
+`-r` or `--refresh`: Drops all collections and re-initializes the database with newly downloaded information from the NVD (this takes a while to complete)
+```
+(venv) $ python3 main.py -r
+(venv) $ python3 main.py --refresh
+```
+
+`-i` or `--input=` (followed by a filename): Specify an input file. Input files must be a list of complete or partial `cpeMatchString` from the NVD datasets. Each string should be on its own line with no other separators or delimiters.
+```
+(venv) $ python3 main.py -i input.txt
+(venv) $ python3 main.py --input=input.txt
+```
+
+`-o` or  `--output=` (followed by a filename): Specify an output file. The programs output is the result of applying the filters you specify in command line arguments to the objects in the local database. Each object is turned into a CSV row of the following format
+
+`[ cve_id],[ cwe_id ],[ first cpeMatchString ],[ all cpe values ],[ last modified date ],[ cvss_v2 vectorString ],[ cvss_v3 vectorString ],[ vulnerability description ]`
+
+If no output filename is specified, the default `output.csv` is used
+
+```
+(venv) $ python3 main.py -o output.csv
+(venv) $ python3 main.py --output=output.csv
+```
+
+`-d` or `--days=` (followed by an integer): Search vulnerabilities from between the specified number of days ago and the current date
+(e.g., calling `python3 main.py -d 30` will search vulnerabilities from within the last 30 days)
+```
+(venv) $ python3 main.py -d 30
+(venv) $ python3 main.py --days=30
+```
+
+`-y` or `--year=` (followed by an integer): Search vulnerabilities from within the specified year
+```
+(venv) $ python3 main.py -y 2017
+(venv) $ python3 main.py --year=2017
+```
+
+`-s` or `--search=` (followed by a complete or partial `cpeMatchString`): Search the database for a single `cpeMatchString`. Usage is the same as for an input file, except with only one search performed.
+```
+(venv) $ python3 main.py -s mysql
+(venv) $ python3 main.py --search mysql
+```
+
+#### Using multiple argument filters
+You can use multiple arguments to further filter your result set. However, some conflict. When conflicting arguments are supplied, the following behavior occurs
+
+* `year` will take precedence over `days`
+* `input` will take precedence over `search`
+
+Example: The following will search MySQL vulnerabilities from the last 30 days
+```
+(venv) $ python3 main.py -s mysql -d 30
 ```

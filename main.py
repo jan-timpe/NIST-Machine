@@ -97,6 +97,7 @@ def main(argv):
         result = result.filter(cpe_data__cpeMatchString__in=search_objects)
     elif search_string:
         result = api.fetch.cpe_string_contains(search_string)
+        
     # a default output file name
     if not output_file:
         output_file = 'output.csv'
