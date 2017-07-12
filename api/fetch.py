@@ -22,6 +22,7 @@ def by_id(id):
     result = one(cve_id=id)
     return result
 
+# accepts 1-2 datetime arguments
 def by_date(start, end=datetime.datetime.now()):
     result = VulnerabilityVector.objects(
         Q(last_modified__gte=start)
@@ -41,6 +42,3 @@ def by_year(year):
 def cpe_string_contains(search_string):
     result = many(cpe_data__cpeMatchString__icontains=search_string)
     return result
-
-# def cpe_string_contains(search_list, vector_list):
-#     result = VulnerabilityVector.
