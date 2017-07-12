@@ -11,9 +11,11 @@ def many(**kwargs):
 
 # retrieves the first object from the mongodb instance matching the passed in arguments
 def one(**kwargs):
-    # result = db.cve_items.find_one(args)
-    result = VulnerabilityVector.get(**kwargs)
-    return result
+    try:
+        result = VulnerabilityVector.objects.get(**kwargs)
+        return result
+    except:
+        return None
 
 # retrieves one CVE_Item given a CVE_ID (primary key)
 def by_id(id):
@@ -39,3 +41,6 @@ def by_year(year):
 def cpe_string_contains(search_string):
     result = many(cpe_data__cpeMatchString__icontains=search_string)
     return result
+
+# def cpe_string_contains(search_list, vector_list):
+#     result = VulnerabilityVector.

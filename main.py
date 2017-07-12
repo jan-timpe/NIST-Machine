@@ -1,6 +1,7 @@
 from api.models import VulnerabilityVector
 import api.vulnerability_database as api
 from datetime import datetime, timedelta
+import re
 import sys, getopt
 
 def parse_cpe_search_file(filename):
@@ -8,7 +9,7 @@ def parse_cpe_search_file(filename):
 
     cpe_search_strings = []
     for line in f:
-        cpe_search_strings.append(line)
+        cpe_search_strings.append(re.compile('.*'+line.strip('\n')+'.*'))
 
     f.close()
     return cpe_search_strings
@@ -72,11 +73,14 @@ def main(argv):
     elif search_date:
         print('day search')
         result = api.fetch.by_date(search_date)
+    else:
+        result = VulnerabilityVector.objects()
 
     if input_file:
         print('input file search')
         search_strings = parse_cpe_search_file(input_file)
-        result.filter(cpe_data__cpeMatchString__icontains__in=search_strings)
+        print(search_strings)
+        result = result.filter(cpe_data__cpeMatchString__in=search_strings)
 
     if not output_file:
         print('output not specified')
