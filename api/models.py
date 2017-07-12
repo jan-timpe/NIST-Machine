@@ -173,8 +173,16 @@ class VulnerabilityVector(Document):
         # Cpe string 1, CVE_ID, CVE_impact_cvssv3, CVE_impact_cvssv2, CWE_ID, publish time, cpe, vulnerability description
         csv_row = []
 
-        csv_row.append(self.cve_id)
-        csv_row.append(self.cwe_id)
+        if self.cve_id:
+            csv_row.append(self.cve_id)
+        else:
+            csv_row.append('None')
+
+        if self.cwe_id:
+            csv_row.append(self.cwe_id)
+        else:
+            csv_row.append('None')
+            
         csv_row.append(self.get_cpe_match_string(0))
         csv_row.append(self.get_cpe_string())
         csv_row.append(self.get_last_modified_string())

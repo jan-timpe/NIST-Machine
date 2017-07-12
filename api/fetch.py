@@ -30,11 +30,12 @@ def by_date(start, end=datetime.datetime.now()):
 # accepts 1 integer argument
 def by_year(year):
     start = datetime.datetime(year, 1, 1, 0, 0, 0, 0)
-    result = by_date(start)
+    end = datetime.datetime(year, 12, 31, 23, 59, 59)
+    result = by_date(start, end=end)
 
     return result
 
 # accepts 1 string argument
 def cpe_string_contains(search_string):
-    result = many(cpe_data__cpeMatchString__contains=search_string)
+    result = many(cpe_data__cpeMatchString__icontains=search_string)
     return result
