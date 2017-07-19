@@ -82,21 +82,52 @@ def main(argv):
         die_with_usage_help()
 
 
-    # start with all the objects and filter progressively based on command line arguments
-    result = VulnerabilityVector.objects()
+    # MongoDB does not support filter chaining for queries with multiple regex searches
+    # to work around that, we build a raw query progressively and do a single filter
+    # with all of the requested parameters.
 
-    # year search will take precedence over date search if both are provided
-    if search_year:
-        result = api.fetch.by_year(search_year)
-    elif search_date:
-        result = api.fetch.by_date(search_date)
+    query = {}
 
     # file input will take precedence over a string argument if both are provided
     if input_file:
+        start = datetime(2017, 1, 1, 0, 0, 0, 0)
+        end = datetime(2018, 12, 31, 23, 59, 59)
         search_objects = parse_cpe_search_file(input_file)
-        result = result.filter(cpe_data__cpeMatchString__in=search_objects)
+        query['cpe_data'] = {
+            '$elemMatch': {
+                    'cpeMatchString': {
+                    '$in': search_objects
+                }
+            }
+        }
     elif search_string:
-        result = api.fetch.cpe_string_contains(search_string)
+        query['cpe_data'] = {
+            '$elemMatch': {
+                'cpeMatchString': {
+                    '$regex': '.*'+str(search_string)+'.*',
+                    '$options': 'i'
+                }
+            }
+        } 
+
+    # year search will take precedence over date search if both are provided
+    if search_year:
+        start = datetime(search_year, 1, 1, 0, 0, 0, 0)
+        end = datetime(search_year, 12, 31, 23, 59, 59)
+        query['last_modified'] = {
+            '$gte': start,
+            '$lte': end
+        }
+    elif search_date:
+        end=datetime.now()
+        query['last_modified'] = {
+            '$gte': search_date,
+            '$lte': end
+        }
+
+    #
+
+    result = VulnerabilityVector.objects(__raw__=query)
         
     # a default output file name
     if not output_file:
