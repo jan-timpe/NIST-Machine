@@ -13,8 +13,6 @@ class VulnerabilityVector(Document):
     last_modified = DateTimeField()
 
     def set_cve(self, cve_item):
-        # super(Document, self).__init__(*args, **kwargs)
-
         self.set_cve_id(cve_item)
         self.set_cve_description(cve_item)
         self.set_cve_references(cve_item)
@@ -28,13 +26,10 @@ class VulnerabilityVector(Document):
     ##
 
     def set_cve_id(self, item):
-        # self.cve_id = None
-
         if 'cve' in item and 'CVE_data_meta' in item['cve'] and 'ID' in item['cve']['CVE_data_meta']:
             self.cve_id = item['cve']['CVE_data_meta']['ID']
 
     def set_cve_description(self, item):
-        # self.cve_description = None
         if 'cve' in item and 'description' in item['cve'] and 'description_data' in item['cve']['description']:
             descriptions = item['cve']['description']['description_data']
 
@@ -43,14 +38,10 @@ class VulnerabilityVector(Document):
                     self.en_desc = desc['value']
 
     def set_cve_references(self, item):
-        # self.cve_references = None
-
         if 'cve' in item and 'references' in item['cve'] and 'reference_data' in item['cve']['references']:
             self.cve_references = item['cve']['references']['reference_data']
 
     def set_cpe_data(self, item):
-        # self.cpe_data = []
-
         if 'configurations' in item and 'nodes' in item['configurations']:
             nodes = item['configurations']['nodes']
 
@@ -60,8 +51,6 @@ class VulnerabilityVector(Document):
                         self.cpe_data.append(child)
 
     def set_cvss_v2(self, item):
-        # self.cvss_v2 = None
-
         if 'impact' in item and 'baseMetricV2' in item['impact'] and 'cvssV2' in item['impact']['baseMetricV2']:
             cvss = item['impact']['baseMetricV2']['cvssV2']
 
@@ -71,8 +60,6 @@ class VulnerabilityVector(Document):
             self.cvss_v2 = cvss
 
     def set_cvss_v3(self, item):
-        # self.cvss_v3 = None
-
         if 'impact' in item and 'baseMetricV3' in item['impact'] and 'cvssV3' in item['impact']['baseMetricV3']:
             cvss = item['impact']['baseMetricV3']['cvssV3']
 
@@ -88,8 +75,6 @@ class VulnerabilityVector(Document):
             self.cvss_v3 = cvss
 
     def set_cwe_id(self, item):
-        # self.cwe_id = None
-
         if 'cve' in item and 'problemtype' in item['cve'] and 'problemtype_data' in item['cve']['problemtype']:
 
             problemtype_data = item['cve']['problemtype']['problemtype_data']
@@ -101,8 +86,6 @@ class VulnerabilityVector(Document):
                             self.cwe_id = desc['value']
 
     def set_last_modified(self, item):
-        # self.last_modified = None
-
         if 'lastModifiedDate' in item:
             self.last_modified = datetime.strptime(item['lastModifiedDate'], '%Y-%m-%dT%H:%MZ')
 
@@ -169,12 +152,23 @@ class VulnerabilityVector(Document):
 
         return 'None'
 
-    def as_csv_row(self, delim=','):
+    def as_csv_row(self, search_strings=[], delim=','):
         # Cpe string 1, CVE_ID, CVE_impact_cvssv3, CVE_impact_cvssv2, CWE_ID, publish time, cpe, vulnerability description
         csv_row = []
 
         if self.cve_id:
             csv_row.append(self.cve_id)
+        else:
+            csv_row.append('None')
+
+        if len(search_strings) > 0:
+            matched = []
+            cpe_match_strings = [d['cpe23Uri'] for d in self.cpe_data]
+            for string in search_strings:
+                for match_string in cpe_match_strings:
+                    if string in match_string:
+                        matched.append(match_string)
+            csv_row.append(';'.join(matched))
         else:
             csv_row.append('None')
 
