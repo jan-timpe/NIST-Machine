@@ -128,9 +128,21 @@ class VulnerabilityVector(Document):
 
         return 'None'
 
+    def get_cvss_v2_impact_score(self): 
+        if len(self.cvss_v2) > 0 and 'baseScore' in self.cvss_v2:
+            return str(self.cvss_v2['baseScore'])
+
+        return 'None'
+
     def get_cvss_v2_string(self):
         if len(self.cvss_v2) > 0 and 'vectorString' in self.cvss_v2:
             return self.cvss_v2['vectorString']
+
+        return 'None'
+
+    def get_cvss_v3_impact_score(self): 
+        if len(self.cvss_v3) > 0 and 'baseScore' in self.cvss_v3:
+            return str(self.cvss_v3['baseScore'])
 
         return 'None'
 
@@ -152,36 +164,68 @@ class VulnerabilityVector(Document):
 
         return 'None'
 
-    def as_csv_row(self, search_strings=[], delim=','):
-        # Cpe string 1, CVE_ID, CVE_impact_cvssv3, CVE_impact_cvssv2, CWE_ID, publish time, cpe, vulnerability description
+    def get_matched(self, search_strings):
+        matched_search_string = 'None'
+        matched_uri_string = 'None'
+
+        if len(search_strings) > 0:
+            matched_searches = []
+            matched_uris = []
+
+            cpe_uris = [d['cpe23Uri'] for d in self.cpe_data]
+            for string in search_strings:
+                for uri in cpe_uris:
+                    if string in uri:
+                        matched_searches.append(string)
+                        matched_uris.append(uri)
+
+            if len(matched_searches) > 0:
+                matched_search_string = matched_searches[0]
+
+            if len(matched_uris) > 0:
+                matched_uri_string = ';'.join(matched_uris)
+            
+        return matched_search_string, matched_uri_string
+
+    def as_csv_row(self, search_strings=[], delim=','): 
         csv_row = []
 
+        matched_search, matched_uris = self.get_matched(search_strings)
+
+        # search string
+        csv_row.append(matched_search)
+
+        # CVE_ID
         if self.cve_id:
             csv_row.append(self.cve_id)
         else:
             csv_row.append('None')
 
-        if len(search_strings) > 0:
-            matched = []
-            cpe_match_strings = [d['cpe23Uri'] for d in self.cpe_data]
-            for string in search_strings:
-                for match_string in cpe_match_strings:
-                    if string in match_string:
-                        matched.append(match_string)
-            csv_row.append(';'.join(matched))
-        else:
-            csv_row.append('None')
+        # CVE_impact_cvssv3_score
+        csv_row.append(self.get_cvss_v3_impact_score())
 
+        # CVE_impact_cvssv3_bm
+        csv_row.append(self.get_cvss_v3_string())
+
+        # CVE_impact_cvssv2_score, 
+        csv_row.append(self.get_cvss_v2_impact_score())
+
+        # CVE_impact_cvssv2_bm
+        csv_row.append(self.get_cvss_v2_string())
+
+        # CWE_ID
         if self.cwe_id:
             csv_row.append(self.cwe_id)
         else:
             csv_row.append('None')
-            
-        csv_row.append(self.get_cpe_match_string(0))
-        csv_row.append(self.get_cpe_string())
+
+        # publish time
         csv_row.append(self.get_last_modified_string())
-        csv_row.append(self.get_cvss_v2_string())
-        csv_row.append(self.get_cvss_v3_string())
-        csv_row.append(self.get_stripped_description(delim)) #
+
+        # vulnerability description
+        csv_row.append(self.get_stripped_description(delim))
+            
+        # cpe
+        csv_row.append(matched_uris)
 
         return delim.join(csv_row)

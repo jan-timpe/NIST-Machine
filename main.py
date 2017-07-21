@@ -17,18 +17,21 @@ def parse_cpe_search_file(filename):
     cpe_search_objects = []
     cpe_search_strings = []
     for line in f:
-        cpe_search_strings.append(line)
+        cpe_search_strings.append(line.strip('\n'))
         cpe_search_objects.append(get_cpe_search_object(line))
 
     f.close()
+
     return (cpe_search_strings, cpe_search_objects)
 
 # prints out a list of VulnerabilityVector objects turned into csv rows
 def output_to_csv(filename, vuln_vectors, search_strings=[], search_string=''):
-    result = ['CPE_String, Matched searches, CVE_ID, CVE_impact_cvssv3, CVE_impact_cvssv2, CWE_ID, Last_modified, CPE, Description']
+    # first row of result is column labels
+    result = ['Search string, CVE_ID,  CVSSv3 base score, CVSSv3 vector, CVSSv2 base score, CVSSv2 vector, CWE_ID, Last modified, Description, Matched CPE URIs']
+
     f = open(filename, 'w')
     for v in vuln_vectors:
-        if len(search_string) > 0 and len(search_strings) == 0:
+        if search_string and len(search_string) > 0 and len(search_strings) == 0:
             search_strings.append(search_string)
 
         result.append(v.as_csv_row(search_strings=search_strings))
@@ -40,7 +43,6 @@ def die_with_usage_help():
     sys.exit(2)
 
 def get_startup_options(argv):
-    search_strings = []
     input_file = None
     output_file = None
     search_date = None
@@ -77,12 +79,12 @@ def get_startup_options(argv):
             # search by single cpe string
             search_string = arg
 
-    return (input_file, output_file, search_date, search_year, search_string, search_strings)
+    return (input_file, output_file, search_date, search_year, search_string)
 
 
 # run the main program; accepts command line arguments and prints the final result set out to an output file in csv format
 def main(argv):
-    input_file, output_file, search_date, search_year, search_string, search_strings = get_startup_options(argv)
+    input_file, output_file, search_date, search_year, search_string = get_startup_options(argv)
 
     # either an input file, days ago, year, or search string value must be provided
     if not input_file and not search_date and not search_year and not search_string:
@@ -97,10 +99,9 @@ def main(argv):
     query = {}
 
     # file input will take precedence over a string argument if both are provided
+    search_strings = []
     if input_file:
-        start = datetime(2017, 1, 1, 0, 0, 0, 0)
-        end = datetime(2018, 12, 31, 23, 59, 59)
-        search_objects = parse_cpe_search_file(input_file)
+        search_strings, search_objects = parse_cpe_search_file(input_file)
         query['cpe_data'] = {
             '$elemMatch': {
                     'cpe23Uri': {
