@@ -1,7 +1,10 @@
 from datetime import datetime
 from mongoengine import *
+
+# connect to the mongo database
 connect('cve_items')
 
+# Document model for vulnerability objects
 class VulnerabilityVector(Document):
     cve_id = StringField(max_length=20, required=True, unique=True)
     en_desc = StringField()
@@ -88,7 +91,6 @@ class VulnerabilityVector(Document):
     def set_last_modified(self, item):
         if 'lastModifiedDate' in item:
             self.last_modified = datetime.strptime(item['lastModifiedDate'], '%Y-%m-%dT%H:%MZ')
-
 
     ##
     ##

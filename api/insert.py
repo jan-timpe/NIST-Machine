@@ -1,9 +1,7 @@
 import api.fetch
-from database.development import db
 import datetime
 from .models import VulnerabilityVector
 
-#
 #
 def insert_or_replace_one(cve_id, item):
     # try:
@@ -13,10 +11,8 @@ def insert_or_replace_one(cve_id, item):
         True # upsert = True; inserts if not found
     )
     return result
-    # except:
-    #     return None
 
-
+# 
 def insert_or_replace_many(items):
     for item in items:
         item_id = item['cve']['CVE_data_meta']['ID']
@@ -33,7 +29,6 @@ def insert_or_replace_many(items):
             item['impact']['baseMetricV2']['cvssV2']['baseScore'] = str(item['impact']['baseMetricV2']['cvssV2']['baseScore'])
             item['impact']['baseMetricV2']['exploitabilityScore'] = str(item['impact']['baseMetricV2']['exploitabilityScore'])
             item['impact']['baseMetricV2']['impactScore'] = str(item['impact']['baseMetricV2']['impactScore'])
-            # cvss_v2 = item['impact']['baseMetricV2']
 
         cvss_v3 = None
         if 'baseMetricV3' in item['impact']:

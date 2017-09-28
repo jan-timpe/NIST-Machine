@@ -1,11 +1,9 @@
 from api.models import VulnerabilityVector
-from database.development import db
 import datetime
 from mongoengine.queryset.visitor import Q
 
 # retrieves a list of objects from the mongodb instance matching the passed in arguments
 def many(**kwargs):
-    # result = db.cve_items.find(args)
     result = VulnerabilityVector.objects(**kwargs)
     return result
 

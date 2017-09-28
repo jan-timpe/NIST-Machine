@@ -1,4 +1,3 @@
-from database.development import db
 import ijson, gzip, urllib.request
 
 CVE_MODIFIED_URL = 'https://static.nvd.nist.gov/feeds/json/cve/1.0/nvdcve-1.0-modified.json.gz'
