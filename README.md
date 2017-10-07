@@ -1,6 +1,21 @@
 # NIST-Machine
 
-This project reaches to the NIST National Vulnerability Database, retrieves the most recent list of vulnerabilities, parses, and saves them into a MongoDB Database
+This project reaches to the [NIST National Vulnerability Database](https://nvd.nist.gov), retrieves a list of vulnerabilities with the given parameters, parses, and saves them into a MongoDB Database.
+
+The project is used to generate lists of vulnerabilities and their attributes to a CSV file. Currently the list of attributes generated for the CSV are (in order):
+
+* `matched_search`: search string used to find this object
+* `cve_id`: the Common Vulnerabilities and Exposures ID
+* `cvss_v3_impact_score`: [Common Vulnerability Scoring System (v3) score](https://www.first.org/cvss/specification-document#1-2-Scoring)
+* `cvss_v3_string`: [CVSS vector string](https://www.first.org/cvss/specification-document#6-Vector-String)
+* `cvss_v2_impact_score`: [CVSS v2 scoring](https://www.first.org/cvss/v2/guide#3-Scoring)
+* `cvss_v2_string`: [CVSS v2 vector string](https://www.first.org/cvss/v2/guide#2-4-Base-Temporal-Environmental-Vectors)
+* `cwe_id`: [Common Weakness Enumeration](https://cwe.mitre.org/about/index.html) 
+* `last_modified`
+* `description`
+* `matched_uris`: URIs that were matched using the `matched_search` string
+
+The fields included in the CSV can be parsed and enumerated to aid in analysis. The `cvss_v2_string` and `cvss_v3_string` can be further parsed to obtain the individual metrics associated with the vulnerability. The rows output by the program, as well as any additional parsing that needs to be done before outputting rows to the CSV, can be done in `models.py` in `Vulnerability.as_csv_row()`. Documentation and raw data feeds can be found on the [NVD website](https://nvd.nist.gov/vuln/data-feeds)
 
 ## Get up and running
 ### Create a virtual environment
