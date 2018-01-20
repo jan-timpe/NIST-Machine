@@ -2,7 +2,7 @@
 
 This project reaches to the [NIST National Vulnerability Database](https://nvd.nist.gov), retrieves a list of vulnerabilities with the given parameters, parses, and saves them into a MongoDB Database.
 
-The project is used to generate lists of vulnerabilities and their attributes to a CSV file. Currently the list of attributes generated for the CSV are (in order):
+The project is used to generate lists of vulnerabilities and their attributes to a CSV file. In the future, the data will be used to train a classifier in order to make predictions about the severity of the vulnerability and help systems administrators to automatically schedule updates to critical systems. Currently the list of attributes generated for the CSV are (in order):
 
 * `matched_search`: search string used to find this object
 * `cve_id`: the Common Vulnerabilities and Exposures ID
